@@ -10,10 +10,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -32,12 +30,16 @@ import java.util.List;
 
 public class MainActivity extends Activity {
 
-    private static final int GREEN = Color.rgb(15, 123, 63);
-    private static final int GREEN_DARK = Color.rgb(7, 88, 43);
-    private static final int YELLOW = Color.rgb(255, 201, 40);
-    private static final int BACKGROUND = Color.rgb(244, 246, 245);
-    private static final int TEXT = Color.rgb(20, 31, 26);
+    private static final int ORANGE = Color.rgb(246, 130, 31);
+    private static final int ORANGE_DARK = Color.rgb(218, 96, 14);
+    private static final int ORANGE_SOFT = Color.rgb(255, 244, 235);
+    private static final int BACKGROUND = Color.rgb(248, 250, 252);
+    private static final int CARD_BORDER = Color.rgb(226, 232, 240);
+    private static final int TEXT = Color.rgb(31, 41, 55);
     private static final int MUTED = Color.rgb(100, 116, 139);
+    private static final int SUCCESS = Color.rgb(22, 125, 70);
+    private static final int WARNING = Color.rgb(180, 83, 9);
+
     private FrameLayout screenRoot;
     private String currentScreen = "login";
     private Campaign openedCampaign;
@@ -45,9 +47,10 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        getWindow().setStatusBarColor(GREEN_DARK);
+        getWindow().setStatusBarColor(ORANGE_DARK);
         screenRoot = new FrameLayout(this);
         setContentView(screenRoot);
+
         if (SessionManager.getCurrentUser() == null) {
             renderLogin();
         } else {
@@ -82,10 +85,12 @@ public class MainActivity extends Activity {
         Button button = new Button(this);
         button.setText(label);
         button.setAllCaps(false);
+        button.setTextSize(14);
         button.setTextColor(Color.WHITE);
         button.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        button.setBackground(rounded(GREEN, dp(14), 0, 0));
-        button.setMinHeight(dp(48));
+        button.setBackground(rounded(ORANGE, dp(12), 0, 0));
+        button.setMinHeight(dp(44));
+        button.setPadding(dp(12), 0, dp(12), 0);
         return button;
     }
 
@@ -93,10 +98,20 @@ public class MainActivity extends Activity {
         Button button = new Button(this);
         button.setText(label);
         button.setAllCaps(false);
-        button.setTextColor(GREEN_DARK);
+        button.setTextSize(14);
+        button.setTextColor(ORANGE_DARK);
         button.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-        button.setBackground(rounded(Color.WHITE, dp(14), GREEN, dp(1)));
-        button.setMinHeight(dp(48));
+        button.setBackground(rounded(Color.WHITE, dp(12), ORANGE, dp(1)));
+        button.setMinHeight(dp(44));
+        button.setPadding(dp(12), 0, dp(12), 0);
+        return button;
+    }
+
+    private Button disabledButton(String label) {
+        Button button = button(label);
+        button.setEnabled(false);
+        button.setTextColor(Color.rgb(148, 163, 184));
+        button.setBackground(rounded(Color.rgb(241, 245, 249), dp(12), CARD_BORDER, dp(1)));
         return button;
     }
 
@@ -104,35 +119,35 @@ public class MainActivity extends Activity {
         GradientDrawable drawable = new GradientDrawable();
         drawable.setColor(color);
         drawable.setCornerRadius(radius);
-        if (strokeWidth > 0) drawable.setStroke(strokeWidth, strokeColor);
+        if (strokeWidth > 0) {
+            drawable.setStroke(strokeWidth, strokeColor);
+        }
         return drawable;
     }
 
     private GradientDrawable gradient(int startColor, int endColor) {
-        GradientDrawable drawable = new GradientDrawable(GradientDrawable.Orientation.TL_BR, new int[]{startColor, endColor});
-        drawable.setCornerRadius(dp(24));
+        GradientDrawable drawable = new GradientDrawable(
+                GradientDrawable.Orientation.LEFT_RIGHT,
+                new int[]{startColor, endColor}
+        );
+        drawable.setCornerRadius(dp(18));
         return drawable;
     }
 
     private LinearLayout card() {
         LinearLayout card = new LinearLayout(this);
         card.setOrientation(LinearLayout.VERTICAL);
-        card.setPadding(dp(16), dp(16), dp(16), dp(16));
-        card.setBackground(rounded(Color.WHITE, dp(18), Color.rgb(226, 232, 240), dp(1)));
-        card.setElevation(dp(2));
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        params.setMargins(0, 0, 0, dp(12));
-        card.setLayoutParams(params);
+        card.setPadding(dp(14), dp(14), dp(14), dp(14));
+        card.setBackground(rounded(Color.WHITE, dp(16), CARD_BORDER, dp(1)));
+        card.setElevation(dp(1));
+        card.setLayoutParams(fullWidthBottom(10));
         return card;
     }
 
     private TextView chip(String label, int backgroundColor, int textColor) {
-        TextView chip = text(label, 12, textColor, Typeface.BOLD);
+        TextView chip = text(label, 11, textColor, Typeface.BOLD);
         chip.setGravity(Gravity.CENTER);
-        chip.setPadding(dp(10), dp(5), dp(10), dp(5));
+        chip.setPadding(dp(9), dp(4), dp(9), dp(4));
         chip.setBackground(rounded(backgroundColor, dp(999), 0, 0));
         return chip;
     }
@@ -147,20 +162,25 @@ public class MainActivity extends Activity {
     private LinearLayout contentWithToolbar(String title, boolean back) {
         LinearLayout root = verticalRoot();
         root.addView(toolbar(title, back));
+
         ScrollView scrollView = new ScrollView(this);
         scrollView.setFillViewport(false);
+
         LinearLayout content = new LinearLayout(this);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(dp(18), dp(18), dp(18), dp(28));
+        content.setPadding(dp(14), dp(14), dp(14), dp(22));
+
         scrollView.addView(content, new ScrollView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
+
         root.addView(scrollView, new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 0,
                 1f
         ));
+
         content.setTag(root);
         return content;
     }
@@ -169,99 +189,157 @@ public class MainActivity extends Activity {
         LinearLayout bar = new LinearLayout(this);
         bar.setOrientation(LinearLayout.HORIZONTAL);
         bar.setGravity(Gravity.CENTER_VERTICAL);
-        bar.setPadding(dp(12), dp(12), dp(12), dp(12));
-        bar.setBackgroundColor(GREEN_DARK);
+        bar.setPadding(dp(10), dp(8), dp(10), dp(8));
+        bar.setBackgroundColor(Color.WHITE);
+        bar.setElevation(dp(3));
 
         if (back) {
-            TextView backButton = text("‹", 34, Color.WHITE, Typeface.BOLD);
+            TextView backButton = text("‹", 30, ORANGE_DARK, Typeface.BOLD);
             backButton.setGravity(Gravity.CENTER);
-            bar.addView(backButton, new LinearLayout.LayoutParams(dp(44), dp(44)));
+            bar.addView(backButton, new LinearLayout.LayoutParams(dp(38), dp(38)));
             backButton.setOnClickListener(v -> goBack());
         }
 
         LinearLayout titleBox = new LinearLayout(this);
         titleBox.setOrientation(LinearLayout.VERTICAL);
         titleBox.setPadding(back ? dp(4) : 0, 0, 0, 0);
-        TextView titleView = text(title, 18, Color.WHITE, Typeface.BOLD);
+
+        TextView titleView = text(title, 17, TEXT, Typeface.BOLD);
         titleBox.addView(titleView);
+
         AppUser user = SessionManager.getCurrentUser();
         if (user != null) {
-            TextView sub = text(user.fullName + " • " + user.role.displayName(), 12, Color.rgb(224, 242, 232), Typeface.NORMAL);
-            titleBox.addView(sub);
+            String subtitle = user.role.displayName();
+            if (user.storeCode != null && user.storeCode.length() > 0 && !"ADMIN".equals(user.storeCode)) {
+                subtitle = user.storeCode + " • " + user.storeName;
+            }
+            titleBox.addView(text(subtitle, 11, MUTED, Typeface.NORMAL));
         }
+
         bar.addView(titleBox, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
 
         if (user != null) {
-            TextView logout = text("Çıkış", 13, Color.WHITE, Typeface.BOLD);
-            logout.setPadding(dp(12), dp(8), dp(12), dp(8));
-            logout.setBackground(rounded(Color.argb(35, 255, 255, 255), dp(999), Color.argb(80, 255, 255, 255), dp(1)));
+            TextView logout = text("Çıkış", 12, ORANGE_DARK, Typeface.BOLD);
+            logout.setPadding(dp(11), dp(7), dp(11), dp(7));
+            logout.setBackground(rounded(ORANGE_SOFT, dp(999), ORANGE, dp(1)));
             logout.setOnClickListener(v -> {
                 SessionManager.logout();
                 renderLogin();
             });
             bar.addView(logout);
         }
+
         return bar;
+    }
+
+    private LinearLayout brandHeader() {
+        LinearLayout hero = new LinearLayout(this);
+        hero.setOrientation(LinearLayout.VERTICAL);
+        hero.setPadding(dp(16), dp(16), dp(16), dp(16));
+        hero.setBackground(gradient(ORANGE, ORANGE_DARK));
+
+        LinearLayout top = new LinearLayout(this);
+        top.setOrientation(LinearLayout.HORIZONTAL);
+        top.setGravity(Gravity.CENTER_VERTICAL);
+
+        TextView logo = text("Migros", 16, Color.WHITE, Typeface.BOLD);
+        logo.setGravity(Gravity.CENTER);
+        logo.setPadding(dp(12), dp(6), dp(12), dp(6));
+        logo.setBackground(rounded(Color.argb(42, 255, 255, 255), dp(999), Color.argb(80, 255, 255, 255), dp(1)));
+        top.addView(logo);
+
+        TextView region = text("  Güney Marmara", 14, Color.WHITE, Typeface.BOLD);
+        top.addView(region, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        hero.addView(top);
+        addSpace(hero, 10);
+        hero.addView(text("Kampanya Takip", 20, Color.WHITE, Typeface.BOLD));
+        hero.addView(text("Şube kampanyalarını sade şekilde gör, tek onayla tamamla.", 13, Color.rgb(255, 244, 235), Typeface.NORMAL));
+        return hero;
     }
 
     private void renderLogin() {
         currentScreen = "login";
+
         ScrollView scroll = new ScrollView(this);
         scroll.setFillViewport(true);
+
         LinearLayout root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
-        root.setPadding(dp(20), dp(28), dp(20), dp(28));
+        root.setPadding(dp(16), dp(18), dp(16), dp(18));
         root.setBackgroundColor(BACKGROUND);
+
         scroll.addView(root, new ScrollView.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
         ));
 
-        LinearLayout hero = new LinearLayout(this);
-        hero.setOrientation(LinearLayout.VERTICAL);
-        hero.setPadding(dp(22), dp(24), dp(22), dp(24));
-        hero.setBackground(gradient(GREEN_DARK, GREEN));
-        hero.setElevation(dp(4));
-        root.addView(hero, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        ));
-        hero.addView(text("Güney Marmara", 17, Color.rgb(232, 245, 238), Typeface.BOLD));
-        hero.addView(text("Kampanya Takip", 31, Color.WHITE, Typeface.BOLD));
-        hero.addView(text("Şube kampanyaları, görev onayları ve yönetici takibi için operasyon uygulaması.", 14, Color.rgb(232, 245, 238), Typeface.NORMAL));
+        root.addView(brandHeader(), fullWidthBottom(14));
 
-        addSpace(root, 18);
-        LinearLayout loginCard = card();
-        root.addView(loginCard);
-        loginCard.addView(text("Test Girişi", 22, TEXT, Typeface.BOLD));
-        loginCard.addView(text("Şimdilik backend yok. Aşağıdaki test hesapları local olarak çalışır.", 14, MUTED, Typeface.NORMAL));
-        addSpace(loginCard, 10);
+        LinearLayout storeCard = card();
+        root.addView(storeCard);
+        storeCard.addView(text("Mağaza girişi", 18, TEXT, Typeface.BOLD));
+        storeCard.addView(text("Çalışanlar mağaza kodu ile giriş yapar. Kod mağaza adıyla eşleşir.", 13, MUTED, Typeface.NORMAL));
+        addSpace(storeCard, 10);
 
-        EditText email = input("E-posta");
-        email.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-        loginCard.addView(email);
-        addSpace(loginCard, 10);
-        EditText password = input("Şifre");
-        password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        loginCard.addView(password);
-        addSpace(loginCard, 12);
+        EditText storeCode = input("Mağaza kodu");
+        storeCode.setInputType(InputType.TYPE_CLASS_NUMBER);
+        storeCard.addView(storeCode);
+        addSpace(storeCard, 10);
 
-        Button login = button("Giriş Yap");
-        loginCard.addView(login);
-        login.setOnClickListener(v -> {
-            AppUser user = SessionManager.login(email.getText().toString(), password.getText().toString());
+        Button storeLogin = button("Mağaza kodu ile giriş yap");
+        storeCard.addView(storeLogin);
+        storeLogin.setOnClickListener(v -> {
+            AppUser user = SessionManager.loginWithStoreCode(storeCode.getText().toString());
             if (user == null) {
-                Toast.makeText(this, "E-posta veya şifre hatalı", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Mağaza kodu bulunamadı", Toast.LENGTH_SHORT).show();
             } else {
                 renderHome();
             }
         });
 
-        addSpace(loginCard, 12);
-        loginCard.addView(text("Hızlı test hesapları", 15, TEXT, Typeface.BOLD));
-        addTestLogin(loginCard, "Admin", "admin@gm-kampanya.test", "Bölge yönetimi / tüm panel erişimi", email, password);
-        addTestLogin(loginCard, "Mağaza Yöneticisi", "mudur@gm-kampanya.test", "Şube yönetici görünümü", email, password);
-        addTestLogin(loginCard, "Çalışan", "calisan@gm-kampanya.test", "Görev işaretleme ve kampanya onayı", email, password);
+        addSpace(storeCard, 8);
+        TextView testCode = text("Test: 8876 → Aziziye Mahallesi MM Migros", 12, ORANGE_DARK, Typeface.BOLD);
+        testCode.setPadding(dp(10), dp(8), dp(10), dp(8));
+        testCode.setBackground(rounded(ORANGE_SOFT, dp(10), 0, 0));
+        testCode.setOnClickListener(v -> storeCode.setText("8876"));
+        storeCard.addView(testCode);
+
+        LinearLayout adminCard = card();
+        root.addView(adminCard);
+        adminCard.addView(text("Admin girişi", 18, TEXT, Typeface.BOLD));
+        adminCard.addView(text("Bölge yönetimi için e-posta ve şifre kullanılır.", 13, MUTED, Typeface.NORMAL));
+        addSpace(adminCard, 10);
+
+        EditText email = input("Admin e-posta");
+        email.setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
+        adminCard.addView(email);
+        addSpace(adminCard, 8);
+
+        EditText password = input("Şifre");
+        password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        adminCard.addView(password);
+        addSpace(adminCard, 10);
+
+        Button adminLogin = outlineButton("Admin olarak giriş yap");
+        adminCard.addView(adminLogin);
+        adminLogin.setOnClickListener(v -> {
+            AppUser user = SessionManager.loginAdmin(email.getText().toString(), password.getText().toString());
+            if (user == null) {
+                Toast.makeText(this, "Admin e-posta veya şifre hatalı", Toast.LENGTH_SHORT).show();
+            } else {
+                renderHome();
+            }
+        });
+
+        addSpace(adminCard, 8);
+        TextView testAdmin = text("Admin: admin@gm-kampanya.test / 123456", 12, MUTED, Typeface.NORMAL);
+        testAdmin.setOnClickListener(v -> {
+            email.setText("admin@gm-kampanya.test");
+            password.setText("123456");
+        });
+        adminCard.addView(testAdmin);
+
         setScreen(scroll);
     }
 
@@ -269,11 +347,12 @@ public class MainActivity extends Activity {
         EditText input = new EditText(this);
         input.setHint(hint);
         input.setSingleLine(true);
+        input.setTextSize(14);
         input.setTextColor(TEXT);
         input.setHintTextColor(Color.rgb(148, 163, 184));
-        input.setPadding(dp(14), 0, dp(14), 0);
-        input.setBackground(rounded(Color.rgb(248, 250, 252), dp(12), Color.rgb(203, 213, 225), dp(1)));
-        input.setMinHeight(dp(52));
+        input.setPadding(dp(12), 0, dp(12), 0);
+        input.setBackground(rounded(Color.WHITE, dp(12), CARD_BORDER, dp(1)));
+        input.setMinHeight(dp(46));
         input.setLayoutParams(new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
@@ -281,71 +360,54 @@ public class MainActivity extends Activity {
         return input;
     }
 
-    private void addTestLogin(LinearLayout parent, String role, String mail, String info, EditText email, EditText password) {
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.VERTICAL);
-        row.setPadding(dp(12), dp(10), dp(12), dp(10));
-        row.setBackground(rounded(Color.rgb(248, 250, 252), dp(14), Color.rgb(226, 232, 240), dp(1)));
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-        );
-        params.setMargins(0, dp(8), 0, 0);
-        parent.addView(row, params);
-        row.addView(text(role + " • " + mail, 14, TEXT, Typeface.BOLD));
-        row.addView(text(info + " • Şifre: 123456", 12, MUTED, Typeface.NORMAL));
-        row.setOnClickListener(v -> {
-            email.setText(mail);
-            password.setText("123456");
-        });
-    }
-
     private void renderHome() {
         currentScreen = "home";
         AppUser user = SessionManager.getCurrentUser();
+
         LinearLayout content = contentWithToolbar("Kampanya Takip", false);
         LinearLayout root = (LinearLayout) content.getTag();
 
-        LinearLayout hero = new LinearLayout(this);
-        hero.setOrientation(LinearLayout.VERTICAL);
-        hero.setPadding(dp(18), dp(18), dp(18), dp(18));
-        hero.setBackground(gradient(GREEN_DARK, GREEN));
-        hero.setElevation(dp(3));
-        content.addView(hero, fullWidthBottom(14));
-        hero.addView(text("Merhaba, " + user.fullName, 24, Color.WHITE, Typeface.BOLD));
-        hero.addView(text(user.storeName, 13, Color.rgb(232, 245, 238), Typeface.NORMAL));
-        addSpace(hero, 10);
-        hero.addView(chip(user.role.displayName(), YELLOW, Color.rgb(59, 43, 0)));
+        LinearLayout hero = card();
+        hero.setBackground(gradient(ORANGE, ORANGE_DARK));
+        content.addView(hero);
+        hero.addView(text(user.role == UserRole.ADMIN ? "Bölge yönetimi" : user.storeName, 18, Color.WHITE, Typeface.BOLD));
+        String subtitle = user.role == UserRole.ADMIN
+                ? "Tüm şube kampanya durumlarını takip edebilirsin."
+                : "Mağaza kodu: " + user.storeCode + " • Kampanyayı tek onayla tamamla.";
+        hero.addView(text(subtitle, 12, Color.rgb(255, 244, 235), Typeface.NORMAL));
 
-        LinearLayout stats = new LinearLayout(this);
-        stats.setOrientation(LinearLayout.HORIZONTAL);
-        content.addView(stats, fullWidthBottom(12));
-        addStat(stats, "Aktif", String.valueOf(activeCampaignCount()), "kampanya");
-        addStat(stats, "Onay", employeeStatusSummary(user), user.role == UserRole.EMPLOYEE ? "durum" : "takip");
+        LinearLayout statRow = new LinearLayout(this);
+        statRow.setOrientation(LinearLayout.HORIZONTAL);
+        content.addView(statRow, fullWidthBottom(10));
+        addStat(statRow, "Aktif", String.valueOf(activeCampaignCount()), "kampanya");
+        addStat(statRow, user.role == UserRole.ADMIN ? "Şube" : "Onay", user.role == UserRole.ADMIN ? String.valueOf(CampaignRepository.getTrackedStoreCount()) : employeeStatusSummary(user), user.role == UserRole.ADMIN ? "takipte" : "durum");
 
         LinearLayout actions = card();
         content.addView(actions);
-        actions.addView(text("Hızlı işlemler", 19, TEXT, Typeface.BOLD));
+        actions.addView(text("İşlemler", 16, TEXT, Typeface.BOLD));
         addSpace(actions, 8);
-        Button campaigns = button("Kampanyaları Gör");
+
+        Button campaigns = button("Kampanyaları görüntüle");
         actions.addView(campaigns);
         campaigns.setOnClickListener(v -> renderCampaigns());
-        addSpace(actions, 8);
+
         if (user.isManagerOrAdmin()) {
-            Button manager = outlineButton("Yönetici Paneli");
+            addSpace(actions, 8);
+            Button manager = outlineButton("Yönetici takip paneli");
             actions.addView(manager);
             manager.setOnClickListener(v -> renderManagerDashboard());
+
             addSpace(actions, 8);
-            Button create = outlineButton("Yeni Kampanya Oluştur");
+            Button create = outlineButton("Yeni kampanya oluştur");
             actions.addView(create);
             create.setOnClickListener(v -> renderCreateCampaign());
         }
 
-        content.addView(text("Bugünkü kampanya kartları", 19, TEXT, Typeface.BOLD));
-        addSpace(content, 8);
+        content.addView(sectionTitle("Aktif kampanyalar"));
         for (Campaign campaign : CampaignRepository.getCampaigns()) {
             content.addView(campaignCard(campaign));
         }
+
         setScreen(root);
     }
 
@@ -365,13 +427,18 @@ public class MainActivity extends Activity {
     }
 
     private String employeeStatusSummary(AppUser user) {
-        if (user.role != UserRole.EMPLOYEE) return "Panel";
+        if (user.role != UserRole.EMPLOYEE) {
+            return "Panel";
+        }
+
         int approved = 0;
         int total = 0;
         for (Campaign campaign : CampaignRepository.getCampaigns()) {
             CampaignProgress progress = CampaignRepository.getProgressForUser(campaign, user);
             total++;
-            if (progress.status == CampaignProgressStatus.APPROVED) approved++;
+            if (progress.status == CampaignProgressStatus.APPROVED) {
+                approved++;
+            }
         }
         return approved + "/" + total;
     }
@@ -379,171 +446,176 @@ public class MainActivity extends Activity {
     private void addStat(LinearLayout parent, String title, String value, String subtitle) {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
-        box.setPadding(dp(14), dp(14), dp(14), dp(14));
-        box.setBackground(rounded(Color.WHITE, dp(18), Color.rgb(226, 232, 240), dp(1)));
+        box.setPadding(dp(12), dp(12), dp(12), dp(12));
+        box.setBackground(rounded(Color.WHITE, dp(14), CARD_BORDER, dp(1)));
+
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         params.setMargins(0, 0, dp(8), 0);
         parent.addView(box, params);
-        box.addView(text(title, 13, MUTED, Typeface.BOLD));
-        box.addView(text(value, 26, GREEN_DARK, Typeface.BOLD));
-        box.addView(text(subtitle, 12, MUTED, Typeface.NORMAL));
+
+        box.addView(text(title, 12, MUTED, Typeface.BOLD));
+        box.addView(text(value, 20, ORANGE_DARK, Typeface.BOLD));
+        box.addView(text(subtitle, 11, MUTED, Typeface.NORMAL));
+    }
+
+    private TextView sectionTitle(String value) {
+        TextView title = text(value, 16, TEXT, Typeface.BOLD);
+        title.setPadding(0, dp(4), 0, dp(8));
+        return title;
     }
 
     private void renderCampaigns() {
         currentScreen = "campaigns";
+
         LinearLayout content = contentWithToolbar("Kampanyalar", true);
         LinearLayout root = (LinearLayout) content.getTag();
-        content.addView(text("Kampanya listesi", 24, TEXT, Typeface.BOLD));
-        content.addView(text("Çalışan kampanyaya girip görevleri tamamlar. Yönetici durumları panelden takip eder.", 14, MUTED, Typeface.NORMAL));
-        addSpace(content, 12);
+
+        content.addView(text("Kampanya listesi", 18, TEXT, Typeface.BOLD));
+        content.addView(text("Detaya gir, açıklamayı kontrol et, mağazada aktifse tek onay ver.", 13, MUTED, Typeface.NORMAL));
+        addSpace(content, 10);
+
         for (Campaign campaign : CampaignRepository.getCampaigns()) {
             content.addView(campaignCard(campaign));
         }
+
         setScreen(root);
     }
 
     private LinearLayout campaignCard(Campaign campaign) {
         LinearLayout card = card();
-        LinearLayout visual = new LinearLayout(this);
-        visual.setOrientation(LinearLayout.VERTICAL);
-        visual.setGravity(Gravity.BOTTOM | Gravity.START);
-        visual.setPadding(dp(16), dp(16), dp(16), dp(16));
-        visual.setBackground(gradient(GREEN, GREEN_DARK));
-        card.addView(visual, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(132)
-        ));
-        visual.addView(text(campaign.visualTitle, 22, Color.WHITE, Typeface.BOLD));
-        visual.addView(text(campaign.discountText, 14, YELLOW, Typeface.BOLD));
 
-        addSpace(card, 12);
-        LinearLayout row = new LinearLayout(this);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_VERTICAL);
-        row.addView(chip(campaign.status.displayName(), Color.rgb(220, 252, 231), GREEN_DARK));
-        addSpaceHorizontal(row, 8);
-        row.addView(chip(campaign.priority, Color.rgb(254, 243, 199), Color.rgb(146, 64, 14)));
-        card.addView(row);
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.HORIZONTAL);
+        header.setGravity(Gravity.CENTER_VERTICAL);
+
+        TextView icon = text("M", 16, Color.WHITE, Typeface.BOLD);
+        icon.setGravity(Gravity.CENTER);
+        icon.setBackground(rounded(ORANGE, dp(12), 0, 0));
+        header.addView(icon, new LinearLayout.LayoutParams(dp(42), dp(42)));
+
+        LinearLayout titleBox = new LinearLayout(this);
+        titleBox.setOrientation(LinearLayout.VERTICAL);
+        titleBox.setPadding(dp(10), 0, 0, 0);
+        titleBox.addView(text(campaign.title, 15, TEXT, Typeface.BOLD));
+        titleBox.addView(text(campaign.startDate + " - " + campaign.endDate, 11, MUTED, Typeface.NORMAL));
+        header.addView(titleBox, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
+
+        header.addView(statusChip(campaign.status.displayName(), campaign.status == com.guneymarmara.kampanyatakip.data.CampaignStatus.ACTIVE));
+        card.addView(header);
+
         addSpace(card, 8);
-        card.addView(text(campaign.title, 19, TEXT, Typeface.BOLD));
-        card.addView(text(campaign.description, 14, MUTED, Typeface.NORMAL));
+        card.addView(text(campaign.description, 13, MUTED, Typeface.NORMAL));
+
         addSpace(card, 8);
-        card.addView(text("Başlangıç: " + campaign.startDate + "  •  Bitiş: " + campaign.endDate, 12, MUTED, Typeface.NORMAL));
-        card.addView(text("Hedef: " + campaign.targetGroup, 12, MUTED, Typeface.NORMAL));
-        addSpace(card, 12);
-        Button details = button("Detayları Aç");
+        LinearLayout chipRow = new LinearLayout(this);
+        chipRow.setOrientation(LinearLayout.HORIZONTAL);
+        chipRow.addView(chip(campaign.priority, ORANGE_SOFT, ORANGE_DARK));
+        addSpaceHorizontal(chipRow, 6);
+        chipRow.addView(chip(campaign.targetGroup, Color.rgb(241, 245, 249), Color.rgb(71, 85, 105)));
+        card.addView(chipRow);
+
+        addSpace(card, 10);
+        Button details = outlineButton("Aç");
         card.addView(details);
         details.setOnClickListener(v -> renderCampaignDetail(campaign));
+
         return card;
+    }
+
+    private TextView statusChip(String label, boolean active) {
+        return active
+                ? chip(label, Color.rgb(220, 252, 231), SUCCESS)
+                : chip(label, Color.rgb(241, 245, 249), Color.rgb(71, 85, 105));
     }
 
     private void renderCampaignDetail(Campaign campaign) {
         currentScreen = "detail";
         openedCampaign = campaign;
+
         AppUser user = SessionManager.getCurrentUser();
+
         LinearLayout content = contentWithToolbar("Kampanya Detayı", true);
         LinearLayout root = (LinearLayout) content.getTag();
 
-        LinearLayout visual = new LinearLayout(this);
-        visual.setOrientation(LinearLayout.VERTICAL);
-        visual.setGravity(Gravity.BOTTOM | Gravity.START);
-        visual.setPadding(dp(18), dp(18), dp(18), dp(18));
-        visual.setBackground(gradient(GREEN_DARK, GREEN));
-        content.addView(visual, new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                dp(180)
-        ));
-        visual.addView(text(campaign.visualTitle, 27, Color.WHITE, Typeface.BOLD));
-        visual.addView(text(campaign.discountText, 15, YELLOW, Typeface.BOLD));
-        addSpace(content, 14);
+        LinearLayout hero = card();
+        hero.setBackground(gradient(ORANGE, ORANGE_DARK));
+        content.addView(hero);
+        hero.addView(text(campaign.visualTitle, 18, Color.WHITE, Typeface.BOLD));
+        hero.addView(text(campaign.discountText, 13, Color.rgb(255, 244, 235), Typeface.BOLD));
 
         LinearLayout detail = card();
         content.addView(detail);
-        detail.addView(text(campaign.title, 22, TEXT, Typeface.BOLD));
-        detail.addView(text(campaign.description, 14, MUTED, Typeface.NORMAL));
+        detail.addView(text(campaign.title, 18, TEXT, Typeface.BOLD));
+        detail.addView(text(campaign.description, 13, MUTED, Typeface.NORMAL));
         addSpace(detail, 8);
-        detail.addView(text("Başlangıç: " + campaign.startDate, 13, TEXT, Typeface.BOLD));
-        detail.addView(text("Bitiş: " + campaign.endDate, 13, TEXT, Typeface.BOLD));
-        detail.addView(text("Hedef: " + campaign.targetGroup, 13, TEXT, Typeface.BOLD));
+        detail.addView(infoLine("Başlangıç", campaign.startDate));
+        detail.addView(infoLine("Bitiş", campaign.endDate));
+        detail.addView(infoLine("Hedef", campaign.targetGroup));
+
+        LinearLayout taskInfo = card();
+        content.addView(taskInfo);
+        taskInfo.addView(text("Mağazada kontrol edilecekler", 16, TEXT, Typeface.BOLD));
+        taskInfo.addView(text("Bunlar bilgilendirme amaçlıdır. Ayrı ayrı onay yoktur.", 12, MUTED, Typeface.NORMAL));
+        addSpace(taskInfo, 8);
+        for (CampaignTask task : campaign.tasks) {
+            taskInfo.addView(text("• " + task.title, 13, TEXT, Typeface.BOLD));
+            taskInfo.addView(text(task.description, 12, MUTED, Typeface.NORMAL));
+            addSpace(taskInfo, 5);
+        }
 
         if (user.role == UserRole.EMPLOYEE) {
             CampaignProgress progress = CampaignRepository.getProgressForUser(campaign, user);
             progress.markSeen();
-            renderEmployeeApproval(content, campaign, progress);
+            renderEmployeeSingleApproval(content, campaign, progress);
         } else {
             renderManagerCampaignInfo(content, campaign);
         }
+
         setScreen(root);
     }
 
-    private void renderEmployeeApproval(LinearLayout content, Campaign campaign, CampaignProgress progress) {
-        LinearLayout statusCard = card();
-        content.addView(statusCard);
-        statusCard.addView(text("Çalışan onay durumu", 18, TEXT, Typeface.BOLD));
-        statusCard.addView(text("Durum: " + progress.status.displayName(), 15, GREEN_DARK, Typeface.BOLD));
-        statusCard.addView(text("Tamamlanan zorunlu görev: " + progress.completedRequiredCount(campaign) + "/" + campaign.requiredTaskCount(), 13, MUTED, Typeface.NORMAL));
+    private TextView infoLine(String label, String value) {
+        return text(label + ": " + value, 12, TEXT, Typeface.BOLD);
+    }
 
-        LinearLayout taskCard = card();
-        content.addView(taskCard);
-        taskCard.addView(text("Görev kontrol listesi", 18, TEXT, Typeface.BOLD));
-        taskCard.addView(text("Tüm zorunlu görevler tamamlanmadan kampanya onayı verilemez.", 13, MUTED, Typeface.NORMAL));
-        addSpace(taskCard, 8);
+    private void renderEmployeeSingleApproval(LinearLayout content, Campaign campaign, CampaignProgress progress) {
+        LinearLayout approval = card();
+        content.addView(approval);
 
-        for (CampaignTask task : campaign.tasks) {
-            LinearLayout taskRow = new LinearLayout(this);
-            taskRow.setOrientation(LinearLayout.VERTICAL);
-            taskRow.setPadding(dp(10), dp(8), dp(10), dp(8));
-            taskRow.setBackground(rounded(Color.rgb(248, 250, 252), dp(12), Color.rgb(226, 232, 240), dp(1)));
-            LinearLayout.LayoutParams taskParams = fullWidthBottom(8);
-            taskCard.addView(taskRow, taskParams);
+        approval.addView(text("Mağaza durumu", 16, TEXT, Typeface.BOLD));
+        approval.addView(text(progress.storeName, 13, MUTED, Typeface.NORMAL));
+        addSpace(approval, 6);
+        approval.addView(statusChip(progress.status));
 
-            CheckBox checkBox = new CheckBox(this);
-            checkBox.setText(task.title + (task.required ? " *" : ""));
-            checkBox.setTextSize(15);
-            checkBox.setTextColor(TEXT);
-            checkBox.setTypeface(Typeface.DEFAULT, Typeface.BOLD);
-            checkBox.setChecked(progress.isTaskCompleted(task.id));
-            checkBox.setEnabled(progress.status != CampaignProgressStatus.APPROVED);
-            taskRow.addView(checkBox);
-            taskRow.addView(text(task.description, 12, MUTED, Typeface.NORMAL));
-            checkBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-                progress.setTaskCompleted(task.id, isChecked);
+        addSpace(approval, 10);
+        if (progress.status == CampaignProgressStatus.APPROVED) {
+            approval.addView(text("Bu kampanya mağazan için onaylandı.", 13, SUCCESS, Typeface.BOLD));
+            addSpace(approval, 8);
+            approval.addView(disabledButton("Onay verildi"));
+        } else {
+            approval.addView(text("Kampanya mağazada aktifse aşağıdaki tek butonla bildir.", 13, MUTED, Typeface.NORMAL));
+            addSpace(approval, 8);
+            Button approve = button("Kampanyayı mağazamda aktif olarak işaretle");
+            approval.addView(approve);
+            approve.setOnClickListener(v -> {
+                progress.approve(campaign);
+                Toast.makeText(this, "Kampanya mağazan için onaylandı", Toast.LENGTH_SHORT).show();
                 renderCampaignDetail(campaign);
             });
         }
-
-        Button approve = button(progress.status == CampaignProgressStatus.APPROVED ? "Kampanya Onaylandı" : "Mağazamda Aktif Olarak Onayla");
-        approve.setEnabled(progress.status != CampaignProgressStatus.APPROVED && progress.allRequiredTasksDone(campaign));
-        if (!approve.isEnabled()) {
-            approve.setTextColor(Color.rgb(229, 231, 235));
-            approve.setBackground(rounded(Color.rgb(148, 163, 184), dp(14), 0, 0));
-        }
-        taskCard.addView(approve);
-        approve.setOnClickListener(v -> {
-            progress.approve(campaign);
-            Toast.makeText(this, "Kampanya şube için onaylandı", Toast.LENGTH_SHORT).show();
-            renderCampaignDetail(campaign);
-        });
     }
 
     private void renderManagerCampaignInfo(LinearLayout content, Campaign campaign) {
         LinearLayout managerCard = card();
         content.addView(managerCard);
-        managerCard.addView(text("Yönetici görünümü", 18, TEXT, Typeface.BOLD));
-        managerCard.addView(text("Bu ekranda kampanya detayını görürsün. Çalışan görevleri işaretler; sen takip panelinden hangi şubenin onay verdiğini kontrol edersin.", 14, MUTED, Typeface.NORMAL));
+
+        managerCard.addView(text("Yönetici görünümü", 16, TEXT, Typeface.BOLD));
+        managerCard.addView(text("Bu ekranda onay verilmez. Sadece kampanya bilgisi ve şube durumları takip edilir.", 13, MUTED, Typeface.NORMAL));
         addSpace(managerCard, 10);
-        Button dashboard = button("Bu Kampanyanın Takip Durumunu Aç");
+
+        Button dashboard = button("Bu kampanyanın durumunu görüntüle");
         managerCard.addView(dashboard);
         dashboard.setOnClickListener(v -> renderManagerDashboard(campaign.id));
-
-        LinearLayout taskCard = card();
-        content.addView(taskCard);
-        taskCard.addView(text("Çalışana giden görevler", 18, TEXT, Typeface.BOLD));
-        for (CampaignTask task : campaign.tasks) {
-            taskCard.addView(text("• " + task.title + (task.required ? "  (zorunlu)" : ""), 14, TEXT, Typeface.BOLD));
-            taskCard.addView(text(task.description, 12, MUTED, Typeface.NORMAL));
-            addSpace(taskCard, 6);
-        }
     }
 
     private void renderManagerDashboard() {
@@ -553,45 +625,62 @@ public class MainActivity extends Activity {
     private void renderManagerDashboard(long onlyCampaignId) {
         currentScreen = "manager";
         AppUser user = SessionManager.getCurrentUser();
+
         if (user == null || !user.isManagerOrAdmin()) {
-            Toast.makeText(this, "Bu ekran için yönetici yetkisi gerekir", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Bu ekran için admin yetkisi gerekir", Toast.LENGTH_SHORT).show();
             renderHome();
             return;
         }
+
         LinearLayout content = contentWithToolbar("Yönetici Paneli", true);
         LinearLayout root = (LinearLayout) content.getTag();
-        content.addView(text("Kampanya uygulama takibi", 23, TEXT, Typeface.BOLD));
-        content.addView(text("Kim gördü, kim görevleri tamamladı, hangi şube onay verdi buradan takip edilir.", 14, MUTED, Typeface.NORMAL));
-        addSpace(content, 12);
+
+        content.addView(text("Şube onay takibi", 18, TEXT, Typeface.BOLD));
+        content.addView(text("Yönetici burada sadece kimin yaptığını, hangi mağazanın beklediğini görür.", 13, MUTED, Typeface.NORMAL));
+        addSpace(content, 10);
 
         int waiting = 0;
-        int progressCount = 0;
+        int seen = 0;
         int approved = 0;
-        for (CampaignProgress progress : CampaignRepository.getAllProgress()) {
-            if (onlyCampaignId != -1L && progress.campaignId != onlyCampaignId) continue;
-            if (progress.status == CampaignProgressStatus.APPROVED) approved++;
-            else if (progress.status == CampaignProgressStatus.IN_PROGRESS || progress.status == CampaignProgressStatus.SEEN) progressCount++;
-            else waiting++;
-        }
-        LinearLayout statRow = new LinearLayout(this);
-        statRow.setOrientation(LinearLayout.HORIZONTAL);
-        content.addView(statRow, fullWidthBottom(12));
-        addMiniStat(statRow, "Bekliyor", waiting);
-        addMiniStat(statRow, "İşlemde", progressCount);
-        addMiniStat(statRow, "Onay", approved);
 
-        for (Campaign campaign : CampaignRepository.getCampaigns()) {
-            if (onlyCampaignId != -1L && campaign.id != onlyCampaignId) continue;
-            LinearLayout campaignBlock = card();
-            content.addView(campaignBlock);
-            campaignBlock.addView(text(campaign.title, 18, TEXT, Typeface.BOLD));
-            campaignBlock.addView(text(campaign.startDate + " - " + campaign.endDate, 12, MUTED, Typeface.NORMAL));
-            addSpace(campaignBlock, 10);
-            List<CampaignProgress> progressList = CampaignRepository.getProgressForCampaign(campaign.id);
-            for (CampaignProgress progress : progressList) {
-                campaignBlock.addView(progressRow(campaign, progress));
+        for (CampaignProgress progress : CampaignRepository.getAllProgress()) {
+            if (onlyCampaignId != -1L && progress.campaignId != onlyCampaignId) {
+                continue;
+            }
+            if (progress.status == CampaignProgressStatus.APPROVED) {
+                approved++;
+            } else if (progress.status == CampaignProgressStatus.SEEN || progress.status == CampaignProgressStatus.IN_PROGRESS) {
+                seen++;
+            } else {
+                waiting++;
             }
         }
+
+        LinearLayout statRow = new LinearLayout(this);
+        statRow.setOrientation(LinearLayout.HORIZONTAL);
+        content.addView(statRow, fullWidthBottom(10));
+        addMiniStat(statRow, "Bekliyor", waiting);
+        addMiniStat(statRow, "Görüldü", seen);
+        addMiniStat(statRow, "Yapıldı", approved);
+
+        for (Campaign campaign : CampaignRepository.getCampaigns()) {
+            if (onlyCampaignId != -1L && campaign.id != onlyCampaignId) {
+                continue;
+            }
+
+            LinearLayout block = card();
+            content.addView(block);
+
+            block.addView(text(campaign.title, 16, TEXT, Typeface.BOLD));
+            block.addView(text(campaign.startDate + " - " + campaign.endDate, 12, MUTED, Typeface.NORMAL));
+            addSpace(block, 10);
+
+            List<CampaignProgress> progressList = CampaignRepository.getProgressForCampaign(campaign.id);
+            for (CampaignProgress progress : progressList) {
+                block.addView(progressRow(progress));
+            }
+        }
+
         setScreen(root);
     }
 
@@ -599,44 +688,50 @@ public class MainActivity extends Activity {
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.VERTICAL);
         box.setGravity(Gravity.CENTER);
-        box.setPadding(dp(8), dp(12), dp(8), dp(12));
-        box.setBackground(rounded(Color.WHITE, dp(16), Color.rgb(226, 232, 240), dp(1)));
+        box.setPadding(dp(8), dp(10), dp(8), dp(10));
+        box.setBackground(rounded(Color.WHITE, dp(14), CARD_BORDER, dp(1)));
+
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
         params.setMargins(0, 0, dp(8), 0);
         parent.addView(box, params);
-        box.addView(text(String.valueOf(count), 24, GREEN_DARK, Typeface.BOLD));
-        box.addView(text(title, 12, MUTED, Typeface.BOLD));
+
+        box.addView(text(String.valueOf(count), 19, ORANGE_DARK, Typeface.BOLD));
+        box.addView(text(title, 11, MUTED, Typeface.BOLD));
     }
 
-    private View progressRow(Campaign campaign, CampaignProgress progress) {
+    private View progressRow(CampaignProgress progress) {
         LinearLayout row = new LinearLayout(this);
         row.setOrientation(LinearLayout.VERTICAL);
-        row.setPadding(dp(12), dp(10), dp(12), dp(10));
-        row.setBackground(rounded(Color.rgb(248, 250, 252), dp(14), Color.rgb(226, 232, 240), dp(1)));
+        row.setPadding(dp(10), dp(9), dp(10), dp(9));
+        row.setBackground(rounded(Color.rgb(248, 250, 252), dp(12), CARD_BORDER, dp(1)));
         row.setLayoutParams(fullWidthBottom(8));
 
         LinearLayout top = new LinearLayout(this);
         top.setOrientation(LinearLayout.HORIZONTAL);
         top.setGravity(Gravity.CENTER_VERTICAL);
-        TextView name = text(progress.userName, 15, TEXT, Typeface.BOLD);
+
+        TextView name = text(progress.userName, 14, TEXT, Typeface.BOLD);
         top.addView(name, new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         top.addView(statusChip(progress.status));
         row.addView(top);
+
         row.addView(text(progress.storeName, 12, MUTED, Typeface.NORMAL));
-        row.addView(text("Görev: " + progress.completedRequiredCount(campaign) + "/" + campaign.requiredTaskCount()
-                + " • Görüldü: " + (progress.seenAt == null ? "-" : progress.seenAt)
-                + " • Onay: " + (progress.completedAt == null ? "-" : progress.completedAt), 12, MUTED, Typeface.NORMAL));
+        row.addView(text("Görüldü: " + emptyDash(progress.seenAt) + "  •  Onay: " + emptyDash(progress.completedAt), 11, MUTED, Typeface.NORMAL));
+
         return row;
+    }
+
+    private String emptyDash(String value) {
+        return value == null || value.length() == 0 ? "-" : value;
     }
 
     private TextView statusChip(CampaignProgressStatus status) {
         switch (status) {
             case APPROVED:
-                return chip("Onaylandı", Color.rgb(220, 252, 231), GREEN_DARK);
+                return chip("Yapıldı", Color.rgb(220, 252, 231), SUCCESS);
             case IN_PROGRESS:
-                return chip("İşlemde", Color.rgb(254, 243, 199), Color.rgb(146, 64, 14));
             case SEEN:
-                return chip("Görüldü", Color.rgb(219, 234, 254), Color.rgb(30, 64, 175));
+                return chip("Görüldü", Color.rgb(255, 237, 213), WARNING);
             case OVERDUE:
                 return chip("Gecikti", Color.rgb(254, 226, 226), Color.rgb(153, 27, 27));
             default:
@@ -647,56 +742,68 @@ public class MainActivity extends Activity {
     private void renderCreateCampaign() {
         currentScreen = "create";
         AppUser user = SessionManager.getCurrentUser();
+
         if (user == null || !user.isManagerOrAdmin()) {
-            Toast.makeText(this, "Kampanya oluşturmak için yönetici yetkisi gerekir", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Kampanya oluşturmak için admin yetkisi gerekir", Toast.LENGTH_SHORT).show();
             renderHome();
             return;
         }
+
         LinearLayout content = contentWithToolbar("Kampanya Oluştur", true);
         LinearLayout root = (LinearLayout) content.getTag();
-        content.addView(text("Yeni kampanya girişi", 24, TEXT, Typeface.BOLD));
-        content.addView(text("Bu ekran MVP amaçlıdır. Görsel yükleme ve push bildirim sonraki aşamada backend ile bağlanacak.", 14, MUTED, Typeface.NORMAL));
-        addSpace(content, 12);
+
+        content.addView(text("Yeni kampanya girişi", 18, TEXT, Typeface.BOLD));
+        content.addView(text("MVP sürüm. Görsel yükleme ve push bildirim sonraki adımda eklenecek.", 13, MUTED, Typeface.NORMAL));
+        addSpace(content, 10);
 
         LinearLayout form = card();
         content.addView(form);
+
         EditText title = input("Kampanya adı");
-        title.setText("Bölgesel Fırsat Alanı Kontrolü");
+        title.setText("Aziziye Fırsat Alanı Kontrolü");
         form.addView(title);
-        addSpace(form, 10);
-        EditText visual = input("Görsel başlığı / kapak metni");
-        visual.setText("Güney Marmara Fırsatları");
+        addSpace(form, 8);
+
+        EditText visual = input("Kapak başlığı");
+        visual.setText("Migros Fırsatları");
         form.addView(visual);
-        addSpace(form, 10);
+        addSpace(form, 8);
+
         EditText description = input("Açıklama");
         description.setSingleLine(false);
         description.setMinLines(3);
-        description.setText("Şube kampanya alanı, fiyat etiketi ve raf düzeni kontrol edilecek.");
+        description.setText("Kampanya alanı, fiyat etiketi ve raf düzeni kontrol edilecek.");
         form.addView(description);
-        addSpace(form, 10);
+        addSpace(form, 8);
+
         EditText start = input("Başlangıç tarih/saat");
         start.setText("15.06.2026 09:00");
         form.addView(start);
-        addSpace(form, 10);
+        addSpace(form, 8);
+
         EditText end = input("Bitiş tarih/saat");
         end.setText("22.06.2026 22:00");
         form.addView(end);
-        addSpace(form, 10);
-        EditText discount = input("Kampanya görsel alt metni");
+        addSpace(form, 8);
+
+        EditText discount = input("Kısa alt metin");
         discount.setText("Haftalık mağaza uygulama kontrolü");
         form.addView(discount);
-        addSpace(form, 10);
+        addSpace(form, 8);
+
         EditText target = input("Hedef şube/personel");
-        target.setText("Güney Marmara tüm şubeler");
+        target.setText("Güney Marmara şubeleri");
         form.addView(target);
-        addSpace(form, 12);
-        Button save = button("Kampanyayı Kaydet");
+        addSpace(form, 10);
+
+        Button save = button("Kampanyayı kaydet");
         form.addView(save);
         save.setOnClickListener(v -> {
             if (title.getText().toString().trim().isEmpty()) {
                 Toast.makeText(this, "Kampanya adı zorunlu", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             Campaign created = CampaignRepository.addCampaign(
                     title.getText().toString().trim(),
                     description.getText().toString().trim(),
@@ -707,9 +814,11 @@ public class MainActivity extends Activity {
                     discount.getText().toString().trim(),
                     target.getText().toString().trim()
             );
+
             Toast.makeText(this, "Kampanya oluşturuldu", Toast.LENGTH_SHORT).show();
             renderCampaignDetail(created);
         });
+
         setScreen(root);
     }
 

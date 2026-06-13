@@ -71,9 +71,15 @@ public class CampaignProgress {
     }
 
     public void approve(Campaign campaign) {
-        if (allRequiredTasksDone(campaign)) {
-            status = CampaignProgressStatus.APPROVED;
-            completedAt = "Bugün";
+        markSeen();
+
+        for (CampaignTask task : campaign.tasks) {
+            if (task.required) {
+                completedTaskIds.add(task.id);
+            }
         }
+
+        status = CampaignProgressStatus.APPROVED;
+        completedAt = "Bugün";
     }
 }

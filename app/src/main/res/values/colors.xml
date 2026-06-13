@@ -1,6 +1,6 @@
 <resources>
-    <color name="gm_green">#0F7B3F</color>
-    <color name="gm_green_dark">#07582B</color>
-    <color name="gm_yellow">#FFC928</color>
-    <color name="gm_background">#F4F6F5</color>
+    <color name="gm_orange">#F6821F</color>
+    <color name="gm_orange_dark">#DA600E</color>
+    <color name="gm_orange_soft">#FFF4EB</color>
+    <color name="gm_background">#F8FAFC</color>
 </resources>

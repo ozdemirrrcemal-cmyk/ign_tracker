@@ -3,8 +3,10 @@ package com.guneymarmara.kampanyatakip.data;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public final class CampaignRepository {
     private static final List<Campaign> campaigns = new ArrayList<>();
@@ -22,62 +24,101 @@ public final class CampaignRepository {
     private static void seedCampaigns() {
         campaigns.add(new Campaign(
                 1001L,
-                "Haftasonu Temizlik & Raf Düzeni Kampanyası",
-                "Güney Marmara şubelerinde kampanya alanı, fiyat etiketleri ve raf düzeninin aynı standartta uygulanması gerekiyor.",
-                "Haftasonu Fırsat Alanı",
+                "Haftasonu Fırsat Alanı Kontrolü",
+                "Kampanya alanı, fiyat etiketi ve raf düzeni aynı standartta uygulanacak.",
+                "Migros Fırsat Alanı",
                 "13.06.2026 09:00",
                 "16.06.2026 22:00",
                 "Yüksek Öncelik",
                 "%25'e varan fırsatlar",
-                "Güney Marmara tüm şubeler",
+                "Güney Marmara şubeleri",
                 CampaignStatus.ACTIVE,
                 Arrays.asList(
-                        new CampaignTask(1L, "Kampanya alanı hazırlandı", "Afiş, stant ve yönlendirme görselleri kontrol edilecek.", true),
-                        new CampaignTask(2L, "Fiyat etiketleri güncellendi", "Kampanyalı ürünlerde eski fiyat etiketi kalmayacak.", true),
-                        new CampaignTask(3L, "Raf ve stok kontrolü yapıldı", "Eksik stok varsa yöneticiye not düşülecek.", true),
-                        new CampaignTask(4L, "Kasa fiyat kontrolü yapıldı", "Kasadaki fiyat ile raf fiyatı eşleşmeli.", true),
-                        new CampaignTask(5L, "Uygulama fotoğrafı hazır", "Bir sonraki sürümde fotoğraf kanıtı yüklenecek.", false)
+                        new CampaignTask(1L, "Kampanya alanı hazırlandı", "Afiş, stant ve yönlendirme görselleri kontrol edilir.", true),
+                        new CampaignTask(2L, "Fiyat etiketleri güncel", "Kampanyalı ürünlerde eski fiyat etiketi kalmamalı.", true),
+                        new CampaignTask(3L, "Raf ve stok kontrolü yapıldı", "Eksik stok varsa mağaza yöneticisine bildirilir.", true),
+                        new CampaignTask(4L, "Kasa fiyat kontrolü yapıldı", "Kasa fiyatı ile raf fiyatı eşleşmeli.", true)
                 )
         ));
 
         campaigns.add(new Campaign(
                 1002L,
-                "Yeni Ürün Lansman Alanı Kontrolü",
-                "Yeni ürün görselleri, raf alanı ve personel bilgilendirme notları kontrol edilecek.",
+                "Yeni Ürün Lansman Alanı",
+                "Yeni ürün raf alanı, görsel materyal ve personel bilgilendirme notları kontrol edilecek.",
                 "Yeni Ürün Lansmanı",
                 "14.06.2026 10:00",
                 "21.06.2026 21:00",
                 "Normal",
-                "Lansman vitrini",
+                "Lansman kontrolü",
                 "Seçili Güney Marmara şubeleri",
                 CampaignStatus.PLANNED,
                 Arrays.asList(
                         new CampaignTask(11L, "Lansman raf alanı ayrıldı", "Ürün teşhiri için ayrılmış alan net olmalı.", true),
-                        new CampaignTask(12L, "Personel bilgilendirmesi yapıldı", "Satış argümanları ekip içinde paylaşılacak.", true),
-                        new CampaignTask(13L, "Görsel materyaller kontrol edildi", "Eksik veya hasarlı afiş varsa not düşülecek.", true)
+                        new CampaignTask(12L, "Personel bilgilendirmesi yapıldı", "Satış argümanları ekip içinde paylaşılır.", true),
+                        new CampaignTask(13L, "Görsel materyaller kontrol edildi", "Eksik veya hasarlı afiş varsa not alınır.", true)
                 )
         ));
     }
 
     private static void seedProgress() {
-        addProgress(new CampaignProgress(1001L, 3L, "Mehmet Kaya", "Migros Güney Marmara - Bursa Nilüfer Şube", CampaignProgressStatus.WAITING));
-        CampaignProgress zeynep = new CampaignProgress(1001L, 4L, "Zeynep Yılmaz", "Migros Güney Marmara - Balıkesir Merkez Şube", CampaignProgressStatus.IN_PROGRESS);
-        zeynep.seenAt = "Bugün";
-        zeynep.completedTaskIds.add(1L);
-        zeynep.completedTaskIds.add(2L);
-        addProgress(zeynep);
-        CampaignProgress ali = new CampaignProgress(1001L, 5L, "Ali Koç", "Migros Güney Marmara - Çanakkale Şube", CampaignProgressStatus.APPROVED);
-        ali.seenAt = "Bugün";
-        ali.completedAt = "Bugün";
-        ali.completedTaskIds.add(1L);
-        ali.completedTaskIds.add(2L);
-        ali.completedTaskIds.add(3L);
-        ali.completedTaskIds.add(4L);
-        addProgress(ali);
+        addProgress(new CampaignProgress(
+                1001L,
+                8876L,
+                "Aziziye Mahallesi Ekibi",
+                "8876 • Aziziye Mahallesi MM Migros",
+                CampaignProgressStatus.WAITING
+        ));
 
-        addProgress(new CampaignProgress(1002L, 3L, "Mehmet Kaya", "Migros Güney Marmara - Bursa Nilüfer Şube", CampaignProgressStatus.WAITING));
-        addProgress(new CampaignProgress(1002L, 4L, "Zeynep Yılmaz", "Migros Güney Marmara - Balıkesir Merkez Şube", CampaignProgressStatus.WAITING));
-        addProgress(new CampaignProgress(1002L, 5L, "Ali Koç", "Migros Güney Marmara - Çanakkale Şube", CampaignProgressStatus.SEEN));
+        CampaignProgress mudanya = new CampaignProgress(
+                1001L,
+                1024L,
+                "Mudanya Mağaza Ekibi",
+                "1024 • Mudanya MM Migros",
+                CampaignProgressStatus.SEEN
+        );
+        mudanya.seenAt = "Bugün";
+        addProgress(mudanya);
+
+        CampaignProgress nilufer = new CampaignProgress(
+                1001L,
+                3401L,
+                "Bursa Nilüfer Ekibi",
+                "3401 • Bursa Nilüfer MMM Migros",
+                CampaignProgressStatus.APPROVED
+        );
+        nilufer.seenAt = "Bugün";
+        nilufer.completedAt = "Bugün";
+        nilufer.completedTaskIds.add(1L);
+        nilufer.completedTaskIds.add(2L);
+        nilufer.completedTaskIds.add(3L);
+        nilufer.completedTaskIds.add(4L);
+        addProgress(nilufer);
+
+        addProgress(new CampaignProgress(
+                1002L,
+                8876L,
+                "Aziziye Mahallesi Ekibi",
+                "8876 • Aziziye Mahallesi MM Migros",
+                CampaignProgressStatus.WAITING
+        ));
+
+        addProgress(new CampaignProgress(
+                1002L,
+                1024L,
+                "Mudanya Mağaza Ekibi",
+                "1024 • Mudanya MM Migros",
+                CampaignProgressStatus.WAITING
+        ));
+
+        CampaignProgress seen = new CampaignProgress(
+                1002L,
+                3401L,
+                "Bursa Nilüfer Ekibi",
+                "3401 • Bursa Nilüfer MMM Migros",
+                CampaignProgressStatus.SEEN
+        );
+        seen.seenAt = "Bugün";
+        addProgress(seen);
     }
 
     private static void addProgress(CampaignProgress progress) {
@@ -101,25 +142,41 @@ public final class CampaignRepository {
 
     public static CampaignProgress getProgressForUser(Campaign campaign, AppUser user) {
         if (campaign == null || user == null) return null;
+
         String key = key(campaign.id, user.id);
         CampaignProgress progress = progressMap.get(key);
+
         if (progress == null) {
-            progress = new CampaignProgress(campaign.id, user.id, user.fullName, user.storeName, CampaignProgressStatus.WAITING);
+            String storeName = user.storeCode == null || user.storeCode.length() == 0
+                    ? user.storeName
+                    : user.storeCode + " • " + user.storeName;
+            progress = new CampaignProgress(campaign.id, user.id, user.fullName, storeName, CampaignProgressStatus.WAITING);
             progressMap.put(key, progress);
         }
+
         return progress;
     }
 
     public static List<CampaignProgress> getProgressForCampaign(long campaignId) {
         List<CampaignProgress> result = new ArrayList<>();
         for (CampaignProgress progress : progressMap.values()) {
-            if (progress.campaignId == campaignId) result.add(progress);
+            if (progress.campaignId == campaignId) {
+                result.add(progress);
+            }
         }
         return result;
     }
 
     public static List<CampaignProgress> getAllProgress() {
         return new ArrayList<>(progressMap.values());
+    }
+
+    public static int getTrackedStoreCount() {
+        Set<String> stores = new HashSet<>();
+        for (CampaignProgress progress : progressMap.values()) {
+            stores.add(progress.storeName);
+        }
+        return stores.size();
     }
 
     public static Campaign addCampaign(String title,
@@ -131,10 +188,11 @@ public final class CampaignRepository {
                                        String discountText,
                                        String targetGroup) {
         List<CampaignTask> tasks = Arrays.asList(
-                new CampaignTask(nextTaskId++, "Kampanya alanı hazırlandı", "Afiş, stant ve yönlendirme görselleri kontrol edilecek.", true),
-                new CampaignTask(nextTaskId++, "Fiyat etiketleri güncellendi", "Raf ve kasa fiyatları eşleşmeli.", true),
-                new CampaignTask(nextTaskId++, "Stok kontrolü yapıldı", "Eksik stok varsa yöneticiye not düşülecek.", true)
+                new CampaignTask(nextTaskId++, "Kampanya alanı hazırlandı", "Afiş, stant ve yönlendirme görselleri kontrol edilir.", true),
+                new CampaignTask(nextTaskId++, "Fiyat etiketleri güncel", "Raf ve kasa fiyatları eşleşmeli.", true),
+                new CampaignTask(nextTaskId++, "Stok kontrolü yapıldı", "Eksik stok varsa mağaza yöneticisine bildirilir.", true)
         );
+
         Campaign campaign = new Campaign(
                 nextCampaignId++,
                 title,
@@ -148,10 +206,13 @@ public final class CampaignRepository {
                 CampaignStatus.PLANNED,
                 tasks
         );
+
         campaigns.add(0, campaign);
-        addProgress(new CampaignProgress(campaign.id, 3L, "Mehmet Kaya", "Migros Güney Marmara - Bursa Nilüfer Şube", CampaignProgressStatus.WAITING));
-        addProgress(new CampaignProgress(campaign.id, 4L, "Zeynep Yılmaz", "Migros Güney Marmara - Balıkesir Merkez Şube", CampaignProgressStatus.WAITING));
-        addProgress(new CampaignProgress(campaign.id, 5L, "Ali Koç", "Migros Güney Marmara - Çanakkale Şube", CampaignProgressStatus.WAITING));
+
+        addProgress(new CampaignProgress(campaign.id, 8876L, "Aziziye Mahallesi Ekibi", "8876 • Aziziye Mahallesi MM Migros", CampaignProgressStatus.WAITING));
+        addProgress(new CampaignProgress(campaign.id, 1024L, "Mudanya Mağaza Ekibi", "1024 • Mudanya MM Migros", CampaignProgressStatus.WAITING));
+        addProgress(new CampaignProgress(campaign.id, 3401L, "Bursa Nilüfer Ekibi", "3401 • Bursa Nilüfer MMM Migros", CampaignProgressStatus.WAITING));
+
         return campaign;
     }
 }
