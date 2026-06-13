@@ -3,7 +3,6 @@ package com.guneymarmara.kampanyatakip;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +30,6 @@ import java.util.List;
 public class MainActivity extends Activity {
 
     private static final int TEXT = Color.rgb(31, 41, 51);
-    private static final int MUTED = Color.rgb(107, 114, 128);
     private static final int ORANGE_DARK = Color.rgb(217, 107, 18);
     private static final int SUCCESS = Color.rgb(22, 131, 74);
     private static final int WARNING = Color.rgb(180, 83, 9);
@@ -43,6 +41,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         getWindow().setStatusBarColor(ORANGE_DARK);
+
         if (SessionManager.getCurrentUser() == null) {
             renderLogin();
         } else {
@@ -72,31 +71,39 @@ public class MainActivity extends Activity {
 
         loginButton.setOnClickListener(v -> {
             error.setVisibility(View.GONE);
+
             AppUser user = SessionManager.login(
                     this,
                     loginInput.getText().toString(),
                     passwordInput.getText().toString()
             );
+
             if (user == null) {
                 error.setText("Mağaza kodu veya şifre hatalı.");
                 error.setVisibility(View.VISIBLE);
                 return;
             }
+
             renderHome();
         });
     }
 
     private String storePreviewText() {
         StringBuilder builder = new StringBuilder();
+
         for (Store store : StoreRepository.getStores()) {
-            if (builder.length() > 0) builder.append("\n");
+            if (builder.length() > 0) {
+                builder.append("\n");
+            }
             builder.append(store.displayName());
         }
+
         return builder.toString();
     }
 
     private void renderHome() {
         currentScreen = "home";
+
         AppUser user = SessionManager.getCurrentUser();
         if (user == null) {
             renderLogin();
@@ -114,10 +121,16 @@ public class MainActivity extends Activity {
         LinearLayout campaignContainer = findViewById(R.id.campaignContainer);
 
         activeCount.setText(String.valueOf(activeCampaignCount()));
-        approvalCount.setText(user.role == UserRole.ADMIN ? managerApprovalSummary() : employeeApprovalSummary(user));
+
+        if (user.role == UserRole.ADMIN) {
+            approvalCount.setText(managerApprovalSummary());
+        } else {
+            approvalCount.setText(employeeApprovalSummary(user));
+        }
 
         boolean showAdminActions = user.isManagerOrAdmin();
         adminActionsCard.setVisibility(showAdminActions ? View.VISIBLE : View.GONE);
+
         managerButton.setOnClickListener(v -> renderManagerDashboard(-1L));
         createButton.setOnClickListener(v -> renderCreateCampaign());
 
@@ -130,14 +143,19 @@ public class MainActivity extends Activity {
         TextView more = findViewById(R.id.btnMore);
 
         if (toolbarTitle != null) {
-            String title = user.role == UserRole.ADMIN
-                    ? "Kampanya Takip · Bölge Yönetimi"
-                    : "Kampanya Takip · " + user.storeDisplayName();
-            toolbarTitle.setText(title);
+            toolbarTitle.setText("Kampanya Takip");
         }
+
         if (toolbarSubtitle != null) {
-            toolbarSubtitle.setVisibility(View.GONE);
+            toolbarSubtitle.setVisibility(View.VISIBLE);
+
+            if (user.role == UserRole.ADMIN) {
+                toolbarSubtitle.setText("Bölge Yönetimi");
+            } else {
+                toolbarSubtitle.setText(user.storeDisplayName());
+            }
         }
+
         if (more != null) {
             more.setOnClickListener(v -> showToolbarMenu(v, user));
         }
@@ -145,70 +163,94 @@ public class MainActivity extends Activity {
 
     private void showToolbarMenu(View anchor, AppUser user) {
         PopupMenu popupMenu = new PopupMenu(this, anchor);
+
         if (user != null && user.isStoreUser()) {
             popupMenu.getMenu().add(0, 1, 0, "Mağaza Şifresini Değiştir");
         }
+
         popupMenu.getMenu().add(0, 2, 1, "Çıkış Yap");
+
         popupMenu.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == 1) {
                 renderChangePassword();
                 return true;
             }
+
             if (item.getItemId() == 2) {
                 SessionManager.logout();
                 renderLogin();
                 return true;
             }
+
             return false;
         });
+
         popupMenu.show();
     }
 
     private int activeCampaignCount() {
         int count = 0;
+
         for (Campaign campaign : CampaignRepository.getCampaigns()) {
             if (campaign.status == CampaignStatus.ACTIVE || campaign.status == CampaignStatus.ENDING_SOON) {
                 count++;
             }
         }
+
         return count;
     }
 
     private String employeeApprovalSummary(AppUser user) {
         int approved = 0;
         int total = 0;
+
         for (Campaign campaign : CampaignRepository.getCampaigns()) {
             CampaignProgress progress = CampaignRepository.getProgressForUser(campaign, user);
             if (progress == null) continue;
+
             total++;
-            if (progress.status == CampaignProgressStatus.APPROVED) approved++;
+
+            if (progress.status == CampaignProgressStatus.APPROVED) {
+                approved++;
+            }
         }
+
         return approved + "/" + total;
     }
 
     private String managerApprovalSummary() {
         int approved = 0;
         int total = 0;
+
         for (CampaignProgress progress : CampaignRepository.getAllProgress()) {
             total++;
-            if (progress.status == CampaignProgressStatus.APPROVED) approved++;
+
+            if (progress.status == CampaignProgressStatus.APPROVED) {
+                approved++;
+            }
         }
+
         return approved + "/" + total;
     }
 
     private void renderCampaignList() {
         currentScreen = "campaigns";
         setContentView(R.layout.screen_campaign_list);
+
         TextView back = findViewById(R.id.btnBack);
         LinearLayout campaignContainer = findViewById(R.id.campaignContainer);
+
         back.setOnClickListener(v -> renderHome());
+
         addCampaignCards(campaignContainer);
     }
 
     private void addCampaignCards(LinearLayout container) {
         container.removeAllViews();
+
         for (Campaign campaign : CampaignRepository.getCampaigns()) {
             View card = inflate(R.layout.item_campaign_card, container);
+
             TextView status = card.findViewById(R.id.tvStatus);
             TextView priority = card.findViewById(R.id.tvPriority);
             TextView title = card.findViewById(R.id.tvTitle);
@@ -220,7 +262,9 @@ public class MainActivity extends Activity {
             title.setText(campaign.title);
             description.setText(campaign.description);
             date.setText(campaign.startDate + "  →  " + campaign.endDate);
+
             card.setOnClickListener(v -> renderCampaignDetail(campaign));
+
             container.addView(card);
         }
     }
@@ -228,6 +272,7 @@ public class MainActivity extends Activity {
     private void renderCampaignDetail(Campaign campaign) {
         currentScreen = "detail";
         openedCampaign = campaign;
+
         AppUser user = SessionManager.getCurrentUser();
         if (user == null) {
             renderLogin();
@@ -235,6 +280,7 @@ public class MainActivity extends Activity {
         }
 
         setContentView(R.layout.screen_campaign_detail);
+
         TextView back = findViewById(R.id.btnBack);
         TextView status = findViewById(R.id.tvCampaignStatus);
         TextView title = findViewById(R.id.tvCampaignTitle);
@@ -246,18 +292,23 @@ public class MainActivity extends Activity {
         Button approveButton = findViewById(R.id.btnApproveCampaign);
 
         back.setOnClickListener(v -> renderCampaignList());
+
         status.setText(campaign.status.displayName());
         title.setText(campaign.title);
         description.setText(campaign.description);
         date.setText(campaign.startDate + "  →  " + campaign.endDate + "\nHedef: " + campaign.targetGroup);
 
         taskContainer.removeAllViews();
+
         for (CampaignTask task : campaign.tasks) {
             View taskView = inflate(R.layout.item_task_info, taskContainer);
+
             TextView taskTitle = taskView.findViewById(R.id.tvTaskTitle);
             TextView taskDescription = taskView.findViewById(R.id.tvTaskDescription);
+
             taskTitle.setText(task.title);
             taskDescription.setText(task.description);
+
             taskContainer.addView(taskView);
         }
 
@@ -271,6 +322,7 @@ public class MainActivity extends Activity {
             employeePanel.setVisibility(View.GONE);
             return;
         }
+
         progress.markSeen();
         myProgress.setText("Mağaza durumu: " + progress.status.displayName());
 
@@ -292,6 +344,7 @@ public class MainActivity extends Activity {
 
     private void renderManagerDashboard(long onlyCampaignId) {
         currentScreen = "manager";
+
         AppUser user = SessionManager.getCurrentUser();
         if (user == null || !user.isManagerOrAdmin()) {
             Toast.makeText(this, "Bu ekran için yönetici yetkisi gerekir", Toast.LENGTH_SHORT).show();
@@ -300,6 +353,7 @@ public class MainActivity extends Activity {
         }
 
         setContentView(R.layout.screen_manager_dashboard);
+
         TextView back = findViewById(R.id.btnBack);
         TextView waitingCount = findViewById(R.id.tvWaitingCount);
         TextView approvedCount = findViewById(R.id.tvApprovedCount);
@@ -309,33 +363,45 @@ public class MainActivity extends Activity {
 
         int waiting = 0;
         int approved = 0;
+
         for (CampaignProgress progress : CampaignRepository.getAllProgress()) {
             if (onlyCampaignId != -1L && progress.campaignId != onlyCampaignId) continue;
-            if (progress.status == CampaignProgressStatus.APPROVED) approved++;
-            else waiting++;
+
+            if (progress.status == CampaignProgressStatus.APPROVED) {
+                approved++;
+            } else {
+                waiting++;
+            }
         }
+
         waitingCount.setText("Bekleyen\n" + waiting);
         approvedCount.setText("Tamamlanan\n" + approved);
 
         progressContainer.removeAllViews();
+
         for (Campaign campaign : CampaignRepository.getCampaigns()) {
             if (onlyCampaignId != -1L && campaign.id != onlyCampaignId) continue;
+
             addManagerCampaignBlock(progressContainer, campaign);
         }
     }
 
     private void addManagerCampaignBlock(LinearLayout container, Campaign campaign) {
         TextView header = new TextView(this);
+
         header.setText(campaign.title + "\n" + campaign.startDate + " → " + campaign.endDate);
         header.setTextColor(TEXT);
         header.setTextSize(15);
         header.setTypeface(null, android.graphics.Typeface.BOLD);
         header.setPadding(0, dp(10), 0, dp(8));
+
         container.addView(header);
 
         List<CampaignProgress> progressList = CampaignRepository.getProgressForCampaign(campaign.id);
+
         for (CampaignProgress progress : progressList) {
             View row = inflate(R.layout.item_progress_row, container);
+
             TextView store = row.findViewById(R.id.tvStore);
             TextView progressStatus = row.findViewById(R.id.tvProgressStatus);
             TextView meta = row.findViewById(R.id.tvProgressMeta);
@@ -346,7 +412,9 @@ public class MainActivity extends Activity {
             progressStatus.setBackgroundResource(progress.status == CampaignProgressStatus.APPROVED
                     ? R.drawable.bg_chip_success
                     : R.drawable.bg_chip_orange);
+
             meta.setText("Görüldü: " + emptyDash(progress.seenAt) + "  •  Tamamlandı: " + emptyDash(progress.completedAt));
+
             container.addView(row);
         }
     }
@@ -357,6 +425,7 @@ public class MainActivity extends Activity {
 
     private void renderChangePassword() {
         currentScreen = "password";
+
         AppUser user = SessionManager.getCurrentUser();
         if (user == null || !user.isStoreUser()) {
             Toast.makeText(this, "Şifre değiştirme mağaza hesabı için kullanılır", Toast.LENGTH_SHORT).show();
@@ -365,6 +434,7 @@ public class MainActivity extends Activity {
         }
 
         setContentView(R.layout.screen_change_password);
+
         TextView back = findViewById(R.id.btnBack);
         TextView storeName = findViewById(R.id.tvStoreName);
         EditText oldPassword = findViewById(R.id.inputOldPassword);
@@ -374,28 +444,36 @@ public class MainActivity extends Activity {
         Button save = findViewById(R.id.btnSavePassword);
 
         storeName.setText(user.storeDisplayName());
+
         back.setOnClickListener(v -> renderHome());
+
         save.setOnClickListener(v -> {
             error.setVisibility(View.GONE);
+
             String next = newPassword.getText().toString().trim();
             String confirm = confirmPassword.getText().toString().trim();
+
             if (next.length() < 6) {
                 showPasswordError(error, "Yeni şifre en az 6 karakter olmalı.");
                 return;
             }
+
             if (!next.equals(confirm)) {
                 showPasswordError(error, "Yeni şifreler eşleşmiyor.");
                 return;
             }
+
             boolean changed = SessionManager.changeCurrentStorePassword(
                     this,
                     oldPassword.getText().toString(),
                     next
             );
+
             if (!changed) {
                 showPasswordError(error, "Mevcut şifre hatalı.");
                 return;
             }
+
             Toast.makeText(this, "Şifre değiştirildi", Toast.LENGTH_SHORT).show();
             renderHome();
         });
@@ -408,6 +486,7 @@ public class MainActivity extends Activity {
 
     private void renderCreateCampaign() {
         currentScreen = "create";
+
         AppUser user = SessionManager.getCurrentUser();
         if (user == null || !user.isManagerOrAdmin()) {
             Toast.makeText(this, "Kampanya oluşturmak için yönetici yetkisi gerekir", Toast.LENGTH_SHORT).show();
@@ -416,6 +495,7 @@ public class MainActivity extends Activity {
         }
 
         setContentView(R.layout.screen_create_campaign);
+
         TextView back = findViewById(R.id.btnBack);
         EditText title = findViewById(R.id.inputTitle);
         EditText description = findViewById(R.id.inputDescription);
@@ -425,6 +505,7 @@ public class MainActivity extends Activity {
         Button save = findViewById(R.id.btnSaveCampaign);
 
         back.setOnClickListener(v -> renderHome());
+
         title.setText("Yeni Kampanya Uygulaması");
         description.setText("Mağaza kampanya alanı, fiyat etiketi ve raf düzeni kontrol edilecek.");
         start.setText("15.06.2026 09:00");
@@ -433,10 +514,12 @@ public class MainActivity extends Activity {
 
         save.setOnClickListener(v -> {
             String titleValue = title.getText().toString().trim();
+
             if (titleValue.isEmpty()) {
                 Toast.makeText(this, "Kampanya adı zorunlu", Toast.LENGTH_SHORT).show();
                 return;
             }
+
             Campaign created = CampaignRepository.addCampaign(
                     titleValue,
                     description.getText().toString().trim(),
@@ -444,6 +527,7 @@ public class MainActivity extends Activity {
                     end.getText().toString().trim(),
                     target.getText().toString().trim()
             );
+
             Toast.makeText(this, "Kampanya oluşturuldu", Toast.LENGTH_SHORT).show();
             renderCampaignDetail(created);
         });
