@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -105,31 +106,20 @@ public class MainActivity extends Activity {
         setContentView(R.layout.screen_home);
         fillToolbar(user);
 
-        TextView storeTitle = findViewById(R.id.tvStoreTitle);
-        TextView storeSubtitle = findViewById(R.id.tvStoreSubtitle);
-        TextView roleChip = findViewById(R.id.tvRoleChip);
         TextView activeCount = findViewById(R.id.tvActiveCount);
         TextView approvalCount = findViewById(R.id.tvApprovalCount);
-        Button campaignsButton = findViewById(R.id.btnCampaigns);
+        LinearLayout adminActionsCard = findViewById(R.id.adminActionsCard);
         Button managerButton = findViewById(R.id.btnManagerDashboard);
         Button createButton = findViewById(R.id.btnCreateCampaign);
-        Button changePasswordButton = findViewById(R.id.btnChangePassword);
         LinearLayout campaignContainer = findViewById(R.id.campaignContainer);
 
-        storeTitle.setText(user.storeDisplayName());
-        storeSubtitle.setText(user.role == UserRole.ADMIN ? "Bölge yönetimi" : "Güney Marmara mağaza hesabı");
-        roleChip.setText(user.role.displayName());
         activeCount.setText(String.valueOf(activeCampaignCount()));
         approvalCount.setText(user.role == UserRole.ADMIN ? managerApprovalSummary() : employeeApprovalSummary(user));
 
-        campaignsButton.setOnClickListener(v -> renderCampaignList());
-        managerButton.setVisibility(user.isManagerOrAdmin() ? View.VISIBLE : View.GONE);
-        createButton.setVisibility(user.isManagerOrAdmin() ? View.VISIBLE : View.GONE);
-        changePasswordButton.setVisibility(user.isStoreUser() ? View.VISIBLE : View.GONE);
-
+        boolean showAdminActions = user.isManagerOrAdmin();
+        adminActionsCard.setVisibility(showAdminActions ? View.VISIBLE : View.GONE);
         managerButton.setOnClickListener(v -> renderManagerDashboard(-1L));
         createButton.setOnClickListener(v -> renderCreateCampaign());
-        changePasswordButton.setOnClickListener(v -> renderChangePassword());
 
         addCampaignCards(campaignContainer);
     }
@@ -137,15 +127,41 @@ public class MainActivity extends Activity {
     private void fillToolbar(AppUser user) {
         TextView toolbarTitle = findViewById(R.id.tvToolbarTitle);
         TextView toolbarSubtitle = findViewById(R.id.tvToolbarSubtitle);
-        TextView logout = findViewById(R.id.btnLogout);
-        if (toolbarTitle != null) toolbarTitle.setText("Kampanya Takip");
-        if (toolbarSubtitle != null) toolbarSubtitle.setText(user.role == UserRole.ADMIN ? "Bölge Yönetimi" : user.storeDisplayName());
-        if (logout != null) {
-            logout.setOnClickListener(v -> {
+        TextView more = findViewById(R.id.btnMore);
+
+        if (toolbarTitle != null) {
+            String title = user.role == UserRole.ADMIN
+                    ? "Kampanya Takip · Bölge Yönetimi"
+                    : "Kampanya Takip · " + user.storeDisplayName();
+            toolbarTitle.setText(title);
+        }
+        if (toolbarSubtitle != null) {
+            toolbarSubtitle.setVisibility(View.GONE);
+        }
+        if (more != null) {
+            more.setOnClickListener(v -> showToolbarMenu(v, user));
+        }
+    }
+
+    private void showToolbarMenu(View anchor, AppUser user) {
+        PopupMenu popupMenu = new PopupMenu(this, anchor);
+        if (user != null && user.isStoreUser()) {
+            popupMenu.getMenu().add(0, 1, 0, "Mağaza Şifresini Değiştir");
+        }
+        popupMenu.getMenu().add(0, 2, 1, "Çıkış Yap");
+        popupMenu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == 1) {
+                renderChangePassword();
+                return true;
+            }
+            if (item.getItemId() == 2) {
                 SessionManager.logout();
                 renderLogin();
-            });
-        }
+                return true;
+            }
+            return false;
+        });
+        popupMenu.show();
     }
 
     private int activeCampaignCount() {

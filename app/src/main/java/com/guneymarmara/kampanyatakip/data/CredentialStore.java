@@ -62,7 +62,7 @@ public final class CredentialStore {
             byte[] bytes = digest.digest(value.getBytes(StandardCharsets.UTF_8));
             StringBuilder builder = new StringBuilder();
             for (byte b : bytes) {
-                builder.append(String.format("%02x", b & 0xff));
+                builder.append(String.format("%02x", b));
             }
             return builder.toString();
         } catch (NoSuchAlgorithmException e) {
