@@ -1,81 +1,54 @@
 package com.guneymarmara.kampanyatakip.data;
 
-import java.util.Arrays;
-import java.util.List;
+import android.content.Context;
 
 public final class SessionManager {
     private static AppUser currentUser;
-    private static final String ADMIN_EMAIL = "admin@gm-kampanya.test";
-    private static final String TEST_PASSWORD = "123456";
-
-    private static final List<AppUser> USERS = Arrays.asList(
-            new AppUser(
-                    1L,
-                    "Cemal Özdemir",
-                    ADMIN_EMAIL,
-                    "Migros Güney Marmara Bölge Yönetimi",
-                    "ADMIN",
-                    UserRole.ADMIN
-            ),
-            new AppUser(
-                    8876L,
-                    "Aziziye Mahallesi Ekibi",
-                    "8876",
-                    "Aziziye Mahallesi MM Migros",
-                    "8876",
-                    UserRole.EMPLOYEE
-            )
-    );
 
     private SessionManager() {}
 
-    public static AppUser loginAdmin(String email, String password) {
-        if (email == null || password == null) return null;
-        String normalizedEmail = email.trim().toLowerCase();
+    public static AppUser login(Context context, String loginValue, String password) {
+        if (context == null || loginValue == null || password == null) return null;
+        String normalizedLogin = loginValue.trim();
+        String normalizedPassword = password.trim();
 
-        if (!ADMIN_EMAIL.equalsIgnoreCase(normalizedEmail)) return null;
-        if (!TEST_PASSWORD.equals(password.trim())) return null;
-
-        for (AppUser user : USERS) {
-            if (user.role == UserRole.ADMIN) {
-                currentUser = user;
-                return user;
-            }
+        if (CredentialStore.verifyAdmin(normalizedLogin, normalizedPassword)) {
+            currentUser = new AppUser(
+                    1L,
+                    "Bölge Admin",
+                    "admin@gm-kampanya.test",
+                    "ADMIN",
+                    "Migros Güney Marmara Bölge Yönetimi",
+                    UserRole.ADMIN
+            );
+            return currentUser;
         }
 
-        return null;
-    }
+        Store store = StoreRepository.findByCode(normalizedLogin);
+        if (store == null) return null;
+        if (!CredentialStore.verifyStorePassword(context, store.code, normalizedPassword)) return null;
 
-    public static AppUser loginWithStoreCode(String storeCode) {
-        if (storeCode == null) return null;
-        String normalizedCode = storeCode.trim();
-
-        for (AppUser user : USERS) {
-            if (user.role == UserRole.EMPLOYEE && user.storeCode.equals(normalizedCode)) {
-                currentUser = user;
-                return user;
-            }
-        }
-
-        return null;
-    }
-
-    public static AppUser login(String loginValue, String password) {
-        if (password == null || password.trim().isEmpty()) {
-            return loginWithStoreCode(loginValue);
-        }
-        return loginAdmin(loginValue, password);
+        currentUser = new AppUser(
+                store.id,
+                store.name,
+                store.code,
+                store.code,
+                store.name,
+                UserRole.EMPLOYEE
+        );
+        return currentUser;
     }
 
     public static AppUser getCurrentUser() {
         return currentUser;
     }
 
-    public static void logout() {
-        currentUser = null;
+    public static boolean changeCurrentStorePassword(Context context, String oldPassword, String newPassword) {
+        if (currentUser == null || !currentUser.isStoreUser()) return false;
+        return CredentialStore.changeStorePassword(context, currentUser.storeCode, oldPassword, newPassword);
     }
 
-    public static List<AppUser> getTestUsers() {
-        return USERS;
+    public static void logout() {
+        currentUser = null;
     }
 }

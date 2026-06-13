@@ -12,7 +12,7 @@ public enum UserRole {
             case MANAGER:
                 return "Mağaza Yöneticisi";
             default:
-                return "Çalışan";
+                return "Mağaza";
         }
     }
 }

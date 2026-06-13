@@ -1,65 +1,75 @@
-# Güney Marmara Kampanya Takip - Android Studio Projesi
+# Migros Güney Marmara Kampanya Takip
 
-Bu paket, sıfırdan açılabilir bağımsız Android Studio projesidir. Mevcut AquaLight projesine ihtiyaç yoktur.
+Bu sürüm mağaza kodu + şifre girişine göre düzenlenmiştir.
 
-## Proje bilgileri
+## Giriş
 
-- Uygulama adı: Güney Marmara Kampanya Takip
-- Package: `com.guneymarmara.kampanyatakip`
-- Dil: Java
-- UI: Native Android programmatic UI
-- Harici dependency: Yok
-- Backend: Şimdilik yok, mock/local test verisi var
+### Mağaza girişi
 
-## Test kullanıcıları
+- Mağaza kodu: `8876`
+- İlk şifre: `123456`
+- Açılan mağaza: `8876 • Aziziye Mahallesi MM Migros`
 
-Admin:
-- E-posta: `admin@gm-kampanya.test`
+Mağaza giriş yaptıktan sonra ana ekrandaki **Mağaza Şifresini Değiştir** butonu ile kendi şifresini değiştirebilir.
+
+### Admin girişi
+
+- Admin: `admin@gm-kampanya.test`
 - Şifre: `123456`
 
-Mağaza yöneticisi:
-- E-posta: `mudur@gm-kampanya.test`
-- Şifre: `123456`
+Admin hesabı yönetici panelini görür. Yönetici panelinde onay işlemi yoktur; sadece hangi mağazanın kampanyayı tamamladığı izlenir.
 
-Çalışan:
-- E-posta: `calisan@gm-kampanya.test`
-- Şifre: `123456`
+## Mağaza listesi nerede?
 
-## Ekranlar
+Mağaza listesi şu dosyada tutulur:
 
-- Login ekranı
-- Kampanya listesi
-- Kampanya detay ekranı
-- Çalışan görev/checklist onayı
-- Yönetici kampanya takip paneli
-- Yönetici yeni kampanya oluşturma ekranı
+`app/src/main/java/com/guneymarmara/kampanyatakip/data/StoreRepository.java`
 
-## Android Studio'da açma
+Yeni mağaza eklemek için `STORES` listesine şu formatta kayıt eklenir:
 
-1. Zip dosyasını çıkar.
-2. Android Studio > File > Open.
-3. Çıkardığın klasörü seç: `guney_marmara_campaign_tracker`.
-4. Gradle Sync çalıştır.
-5. Run ile emülatörde veya telefonda başlat.
+```java
+new Store(
+    2L,
+    "1234",
+    "Örnek Mahallesi MM Migros",
+    "Güney Marmara",
+    true
+)
+```
 
-Not: Bu pakette Gradle wrapper jar dosyası yoktur. Android Studio kendi Gradle kurulumu ile projeyi açabilir. Gerekirse Android Studio sağ üstten Gradle/AGP dosyalarını otomatik indirecektir.
+## Şifre sistemi
 
-## İlk test akışı
+Mağaza şifreleri `SharedPreferences` içinde SHA-256 hash olarak saklanır. İlk şifre cihazda kayıtlı değilse varsayılan olarak `123456` kabul edilir. Mağaza şifre değiştirdiğinde yeni hash cihazda tutulur.
 
-1. Admin hesabıyla giriş yap.
-2. Yönetici Paneli ekranını kontrol et.
-3. Çıkış yap.
-4. Çalışan hesabıyla giriş yap.
-5. Kampanyaya gir, görevleri işaretle.
-6. Tüm zorunlu görevler tamamlanınca "Mağazamda Aktif Olarak Onayla" butonuna bas.
-7. Çıkış yap, tekrar admin hesabıyla gir.
-8. Yönetici panelinde çalışan durumunu kontrol et.
+Backend bağlandığında bu yapı `CredentialStore` içinden API tabanlı kimlik doğrulamaya taşınabilir.
 
-## Sonraki geliştirme adımları
+## Ekran yapısı
 
-- Firebase Cloud Messaging ile gerçek push bildirim
-- Backend API ve gerçek login
-- Kampanya görsel yükleme
-- Günlük kontrol bildirimleri/takvimi
-- Fotoğraf kanıtı yükleme
-- Yönetici rapor ekranları
+Bu sürüm XML layout kullanır:
+
+- `screen_login.xml`
+- `screen_home.xml`
+- `screen_campaign_list.xml`
+- `screen_campaign_detail.xml`
+- `screen_manager_dashboard.xml`
+- `screen_change_password.xml`
+- `screen_create_campaign.xml`
+- `item_campaign_card.xml`
+- `item_task_info.xml`
+- `item_progress_row.xml`
+
+## Çalışan / mağaza akışı
+
+1. Mağaza kodu ve şifre ile giriş yapar.
+2. Kampanya listesini görür.
+3. Kampanya detayını okur.
+4. Mağazada uyguladıktan sonra tek butonla tamamlar.
+
+Çoklu checkbox/onay kaldırılmıştır.
+
+## Yönetici akışı
+
+1. Admin hesabı ile giriş yapar.
+2. Yönetici panelini açar.
+3. Mağaza bazında kampanya durumunu görür.
+4. Yönetici panelinde onay verme işlemi yoktur.

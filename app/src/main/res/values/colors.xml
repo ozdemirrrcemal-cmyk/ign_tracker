@@ -1,6 +1,13 @@
 <resources>
-    <color name="gm_orange">#F6821F</color>
-    <color name="gm_orange_dark">#DA600E</color>
-    <color name="gm_orange_soft">#FFF4EB</color>
-    <color name="gm_background">#F8FAFC</color>
+    <color name="migros_orange">#F58220</color>
+    <color name="migros_orange_dark">#D96B12</color>
+    <color name="migros_orange_soft">#FFF3E8</color>
+    <color name="gm_background">#F6F7F9</color>
+    <color name="gm_surface">#FFFFFF</color>
+    <color name="gm_text">#1F2933</color>
+    <color name="gm_muted">#6B7280</color>
+    <color name="gm_line">#E5E7EB</color>
+    <color name="gm_success">#16834A</color>
+    <color name="gm_warning">#B45309</color>
+    <color name="gm_danger">#B91C1C</color>
 </resources>
